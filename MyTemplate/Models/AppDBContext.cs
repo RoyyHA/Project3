@@ -9,6 +9,8 @@ namespace MyTemplate.Models
 {
     public class AppDBContext : IdentityDbContext<AppUser>
     {
+        public DbSet<Category> Categories { set; get; }
+        public DbSet<Product> Products { set; get; }
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
         {
         }

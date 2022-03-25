@@ -2,3 +2,31 @@
 @model UserModel
 @{
 }
+
+<h1>List Users</h1>
+<partial name="_StatusMessage" model="@Model.StatusMessage" />
+
+<table class="table table-striped">
+    <tr>
+        <th>Name</th>
+        <th>Roles</th>
+        <th></th>
+    </tr>
+    @foreach (var i in @Model.users)
+    {
+        <tr>
+            <td>@i.UserName</td>
+            <td>@i.ListRole</td>
+            <td>
+                <form method="post" class="d-inline">   
+                    <button name="Input.Id" value="@i.Id" class="btn btn-primary btn-sm" asp-page="./AddUserRole">
+                        Update Role
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

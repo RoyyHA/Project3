@@ -53,8 +53,7 @@ namespace DemoIdentity.Mail
                 await smtp.SendAsync(message);
             }
             catch (Exception ex)
-            {
-                // có thể dùng log để ghi thông tin lại - tự xử lý
+            {      
             }
 
             // đóng kết nối với server mail sau khi gửi mail

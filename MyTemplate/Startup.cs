@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyTemplate.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MyTemplate
 {
@@ -27,18 +24,19 @@ namespace MyTemplate
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddDbContext<AppDBContext>(o =>
             {
                 o.UseSqlServer(Configuration.GetConnectionString("MyTemplateConnectionString"));
             });
-            services.AddIdentity<AppUser, IdentityRole>(o => {
-                o.SignIn.RequireConfirmedEmail = false;
-            })
-            .AddEntityFrameworkStores<AppDBContext>()
-            .AddDefaultTokenProviders();
+
+            services.AddIdentity<AppUser, IdentityRole>()
+                .AddEntityFrameworkStores<AppDBContext>()
+                .AddDefaultTokenProviders();
 
             // Truy cập IdentityOptions
-            services.Configure<IdentityOptions>(options => {
+            services.Configure<IdentityOptions>(options =>
+            {
                 // Thiết lập về Password
                 options.Password.RequireDigit = false; // Không bắt phải có số
                 options.Password.RequireLowercase = false; // Không bắt phải có chữ thường
@@ -58,12 +56,14 @@ namespace MyTemplate
                 options.User.RequireUniqueEmail = true; // Email là duy nhất
 
                 // Cấu hình đăng nhập.
-                options.SignIn.RequireConfirmedEmail = true; // Cấu hình xác thực địa chỉ email (email phải tồn tại)
+                options.SignIn.RequireConfirmedEmail = false; // Cấu hình xác thực địa chỉ email (email phải tồn tại)
                 options.SignIn.RequireConfirmedPhoneNumber = false; // Xác thực số điện thoại
             });
+
             // Cấu hình Cookie
-            services.ConfigureApplicationCookie(options => {
-                // options.Cookie.HttpOnly = true;
+            services.ConfigureApplicationCookie(options =>
+            {
+                // options.Cookie.HttpOnly = true;  
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 options.LoginPath = $"/Identity/Account/Login/";                                 // Url đến trang đăng nhập
                 options.LogoutPath = $"/Identity/Account/logout/";
@@ -76,15 +76,21 @@ namespace MyTemplate
                 options.ValidationInterval = TimeSpan.FromSeconds(5);
             });
 
+            services.AddAuthorization(o => {
+                o.AddPolicy("AdminDropdown", policy => {
+                    policy.RequireRole("Admin");
+                });
+            });
+
             services.AddOptions();
 
-            var mailsettings = Configuration.GetSection("MailSettings");
-            services.Configure<SendMailServices>(mailsettings);
+            var mailsettings = Configuration.GetSection("MailSettings");  // đọc config
+            services.Configure<SendMailServices>(mailsettings);               // đăng ký để Inject
 
-            services.AddTransient<IEmailSender, SendMailService>();
+            services.AddTransient<IEmailSender, SendMailService>();       // Đăng ký dịch vụ Mail
 
-            services.AddControllersWithViews();
             services.AddRazorPages();
+            services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,16 +108,21 @@ namespace MyTemplate
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication();    // đăng nhập
 
-            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-                //for razor page
+                  name: "default",
+                  pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapControllerRoute(
+                  name: "MyArea",
+                  pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                // for razor page
                 endpoints.MapRazorPages();
             });
         }

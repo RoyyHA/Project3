@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MailKit.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,6 +13,7 @@ using MyTemplate.Models;
 
 namespace MyTemplate.Areas.Identity.Pages.Role
 {
+    [Authorize(Roles = "Admin")]
     public class UserModel : PageModel
     {
         const int USER_PER_PAGE = 10;
